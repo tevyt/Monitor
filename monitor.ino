@@ -27,26 +27,32 @@ void setup() {
   pinMode(RED , OUTPUT);
   pinMode(BUZZER , OUTPUT);
   pinMode(FSR , INPUT);
+  Serial.println(float(heartRate));
 }
 
 void alert(int level) {
-   digitalWrite(RED , LOW);
-   digitalWrite(YELLOW , LOW);
-   digitalWrite(GREEN , LOW);
-   analogWrite(BUZZER , LOW);
+   //digitalWrite(RED , LOW);
+   //digitalWrite(YELLOW , LOW);
+   //digitalWrite(GREEN , LOW);
+   //analogWrite(BUZZER , LOW);
   switch (level) {
     case SAFE:
       digitalWrite(GREEN , HIGH);
       analogWrite(BUZZER, LOW);
+      digitalWrite(RED , LOW);
+      digitalWrite(YELLOW , LOW);
       break;
     case WARN:
       digitalWrite(YELLOW , HIGH);
+      digitalWrite(GREEN , LOW);
+      digitalWrite(RED , LOW);
       analogWrite(BUZZER, LOW);
       break;
     case DANGER:
       digitalWrite(RED, HIGH);
-      analogWrite(BUZZER , 3);
-      tone(BUZZER, 500);
+      analogWrite(BUZZER, 3);
+      digitalWrite(YELLOW , LOW);
+      digitalWrite(GREEN , LOW);
       break;
     default:
       alert(SAFE);//I think safe is a good default
@@ -64,17 +70,25 @@ boolean danger(float heartRate){
 
 void loop() {
   float current = millis();
-  int beats = 0;
-  while (current + 1000 > millis()) {
-    float reading = analogRead(FSR);
-    if (reading > 0) {
-      beats++;
+  float incomingByte = 0;
+  //int beats = 0;
+  //while (current + 1000 > millis()) {
+    //Serial.println(analogRead(FSR));
+    //float reading = analogRead(FSR);
+    //if (reading > 0) {
+      //beats++;
+    //}
+   
+    if(Serial.available() > 0){ 
+      incomingByte = Serial.parseFloat();
+      heartRate = incomingByte;
+      Serial.flush();
+      Serial.println(heartRate);
     }
-    delay(100);
-  }
-  heartRate +=  (beats * 60);
-  heartRate /= 2;
-  Serial.println(heartRate);
+    //delay(100);
+  //heartRate +=  (beats * 60);
+  //heartRate /= 2;
+  //Serial.println(heartRate);
 
   if(warn(heartRate)){
     alert(WARN);
